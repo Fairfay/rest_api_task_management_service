@@ -10,14 +10,17 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     env:
+      # Тестовые значения для CI (безопасные для публичных репозиториев)
+      SECRET_KEY: "django-insecure-ci-test-key-abcdefghijklmnopqrstuvwxyz123456"
       DEBUG: "True"
+      DJANGO_SETTINGS_MODULE: "server.settings_test"
       REDIS_URL: redis://localhost:6379/0
-      # Используем тестовые значения для CI вместо секретов.
+      # Настройки базы данных для тестов
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
       POSTGRES_DB: testdb
-      FLOWER_USER: testuser
-      FLOWER_PSW: testpass
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
 
     services:
       postgres:
@@ -29,9 +32,9 @@ jobs:
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: testdb
         options: >-
-          --health-cmd "pg_isready -U testuser -d testdb" 
-          --health-interval 10s 
-          --health-timeout 5s 
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 5
 
       redis:
@@ -39,19 +42,20 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping" 
-          --health-interval 10s 
-          --health-timeout 5s 
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 5
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.13
+          python-version: "3.13"
+          cache: "poetry"
 
       - name: Install Poetry
         run: |
@@ -69,4 +73,4 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest --cov
+          poetry run pytest --cov --cov-fail-under=80
