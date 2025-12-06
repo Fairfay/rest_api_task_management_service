@@ -210,7 +210,7 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'json_formatter':{
+        'json_formatter': {
             '()': structlog.stdlib.ProcessorFormatter,
             'processor': structlog.processors.JSONRenderer(),
         }
