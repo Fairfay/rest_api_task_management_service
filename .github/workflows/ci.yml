@@ -10,15 +10,14 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     env:
-      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      FLOWER_USER: ${{ secrets.FLOWER_USER }}
-      FLOWER_PSW: ${{ secrets.FLOWER_PSW }}
-      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
       DEBUG: "True"
       REDIS_URL: redis://localhost:6379/0
+      # Используем тестовые значения для CI вместо секретов.
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+      FLOWER_USER: testuser
+      FLOWER_PSW: testpass
 
     services:
       postgres:
@@ -26,11 +25,11 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
         options: >-
-          --health-cmd "pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}" 
+          --health-cmd "pg_isready -U testuser -d testdb" 
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
@@ -40,7 +39,7 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping || exit 1" 
+          --health-cmd "redis-cli ping" 
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
@@ -57,20 +56,17 @@ jobs:
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          export PATH="$HOME/.local/bin:$PATH"
-          poetry config virtualenvs.in-project true
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
+          poetry config virtualenvs.in-project true
           poetry install --no-interaction --no-ansi
 
       - name: Run Flake8
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          poetry run flake8 . --extend-ignore=F403,F405 --exclude=migrations,__pycache__
+          poetry run flake8 .
 
       - name: Run tests
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
           poetry run pytest --cov
