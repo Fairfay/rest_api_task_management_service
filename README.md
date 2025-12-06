@@ -153,6 +153,11 @@ curl -X POST http://localhost:8000/api/v1/payouts/ \
     "comment": "Ежемесячная выплата зарплаты"
   }'
 ```
+### Скриншоты работы ПО:
+<img width="1309" height="1502" alt="Снимок экрана от 2025-12-06 23-03-30" src="https://github.com/user-attachments/assets/713c83a3-69d2-4a92-9f42-c4c3c26345e3" />
+<img width="1309" height="346" alt="Снимок экрана от 2025-12-06 23-06-34" src="https://github.com/user-attachments/assets/543a7213-8479-4a1e-b517-cd93c80a8d05" />
+<img width="1309" height="1009" alt="Снимок экрана от 2025-12-06 23-06-45" src="https://github.com/user-attachments/assets/6d6356c3-a734-4784-a282-487873f859cc" />
+
 
 ## Доступные команды Make
 
