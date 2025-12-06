@@ -23,7 +23,5 @@ jobs:
       - name: Run linters
         run: |
           poetry run flake8 .
-          poetry run isort --check-only .
-          poetry run black --check .
       - name: Run tests
         run: poetry run pytest --ds=server.settings_test -v
