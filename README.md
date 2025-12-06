@@ -207,30 +207,8 @@ curl -X POST http://localhost:8000/api/v1/payouts/ \
 6. **Reverse Proxy** (Nginx) - маршрутизация, SSL/TLS, статика
 7. **Monitoring** (опционально) - Flower для Celery, Prometheus/Grafana для метрик
 
-## Структура проекта
-
-```
-rest_api_task_management_service/
-├── payouts/              # Основное приложение для управления выплатами
-│   ├── models.py        # Модель PayoutRequest
-│   ├── serializers.py   # DRF сериализаторы с валидацией
-│   ├── views.py         # API viewset
-│   └── pytest_tests/    # Тесты
-├── server/              # Настройки Django проекта
-│   ├── settings.py      # Конфигурация Django
-│   ├── settings_test.py # Настройки для тестов
-│   ├── urls.py          # Основная конфигурация URL
-│   ├── celery.py        # Настройка Celery
-│   └── tasks.py         # Celery задачи
-├── docker-compose.yml   # Docker setup для разработки
-├── docker-compose.prod.yml  # Docker setup для продакшена
-├── Dockerfile           # Определение Docker образа
-├── Makefile             # Общие команды
-├── pytest.ini           # Конфигурация pytest
-└── README.md            # Этот файл
-```
-
 
 ## Автор
 Тычин Денис
+Email: tycindenis@gmail.com Telegram: @fairfay Habr: https://career.habr.com/fairfay
 
