@@ -1,9 +1,12 @@
 [flake8]
-max-line-length = 150
-ignore = F403,F405
-exclude =
+exclude = 
     .git,
+    .venv,
     __pycache__,
-    env/,
-    venv/,
-    */migrations/*
+    migrations,
+    */migrations/*,
+    node_modules,
+    venv,
+    env
+extend-ignore = F403,F405,E704,W503
+max-line-length = 150
