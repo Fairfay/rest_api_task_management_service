@@ -29,6 +29,11 @@ jobs:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       TELEGRAM_LOGGING_EMIT_ON_DEBUG: False
+      TELEGRAM_BOT_NAME: ""
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_LOGGING_CHAT: ""
+      SAFETY_API_KEY: ""
+      SECURE_REDIRECT_EXEMPT: ""
 
     services:
       postgres:
