@@ -203,7 +203,7 @@ class TestCeleryTaskExecution:
             recipients_details='Account: 1111',
             status=PayoutRequest.PayoutRequestStatus.RESOLVED
         )
-        result = process_payout(payout.id)
+        process_payout(payout.id)
         payout.refresh_from_db()
         assert payout.status == PayoutRequest.PayoutRequestStatus.RESOLVED
 
