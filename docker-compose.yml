@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    volumes:
+      - ./data/db/:/var/lib/postgresql/data
+    restart: always
+    env_file: ./.env
+    networks:
+      - postgresnet
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  web:
+    # image: "rest-api-task-management-service:dev"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - ENVIRONMENT=development
+        - SAFETY_API_KEY=${SAFETY_API_KEY}
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis
+    env_file: ./.env
+    networks:
+      - postgresnet
+    command: sh start-development.sh
+
+  redis:
+    image: redis:alpine
+    networks:
+      - postgresnet
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery:
+    build: .
+    command: celery -A server worker -l debug
+    volumes:
+      - .:/code
+    restart: always
+    depends_on:
+      - db
+      - redis
+    networks:
+      - postgresnet
+    env_file: ./.env
+
+  # Пока не требуется, шедулер подождет своего часа
+  celery-beat:
+    build: .
+    command: celery -A server beat -l debug
+    volumes:
+      - .:/code
+    restart: always
+    depends_on:
+      - db
+      - redis
+    networks:
+      - postgresnet
+    env_file: ./.env
+
+  flower:
+    build: .
+    command: celery -A server flower --basic-auth=${FLOWER_USER}:${FLOWER_PSW} -l debug
+    ports:
+      - 5555:5555
+    volumes:
+      - .:/code
+    restart: always
+    networks:
+      - postgresnet
+    env_file: ./.env
+    depends_on:
+      - db
+      - redis
+
+networks:
+  postgresnet:
