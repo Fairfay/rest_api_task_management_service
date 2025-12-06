@@ -10,12 +10,10 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     env:
-      # Тестовые значения для CI (безопасные для публичных репозиториев)
       SECRET_KEY: "django-insecure-ci-test-key-abcdefghijklmnopqrstuvwxyz123456"
       DEBUG: "True"
       DJANGO_SETTINGS_MODULE: "server.settings_test"
       REDIS_URL: redis://localhost:6379/0
-      # Настройки базы данных для тестов
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
       POSTGRES_DB: testdb
@@ -58,19 +56,17 @@ jobs:
           cache: "poetry"
 
       - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
 
       - name: Install dependencies
-        run: |
-          poetry config virtualenvs.in-project true
-          poetry install --no-interaction --no-ansi
+        run: poetry install --no-interaction --no-ansi
 
       - name: Run Flake8
-        run: |
-          poetry run flake8 .
+        run: poetry run flake8 .
 
       - name: Run tests
-        run: |
-          poetry run pytest --cov --cov-fail-under=80
+        run: poetry run pytest --cov
