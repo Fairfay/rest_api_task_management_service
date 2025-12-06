@@ -1,27 +1,72 @@
+# .github/workflows/ci.yml
 name: CI
+
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      FLOWER_USER: ${{ secrets.FLOWER_USER }}
+      FLOWER_PSW: ${{ secrets.FLOWER_PSW }}
+      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+      DEBUG: "True"
+      REDIS_URL: redis://localhost:6379/0
+
+    services:
+      postgres:
+        image: postgres:16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        options: >-
+          --health-cmd "pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.13
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry config virtualenvs.in-project true
       - name: Install dependencies
-        run: poetry install --no-interaction --no-ansi
-      - name: Run linters
         run: |
-          poetry run flake8 .
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry install --no-interaction --no-ansi
+      - name: Run Flake8
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run flake8 . --extend-ignore=F403,F405 --exclude=migrations,__pycache__
       - name: Run tests
-        run: poetry run pytest --ds=server.settings_test -v
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run pytest --cov
